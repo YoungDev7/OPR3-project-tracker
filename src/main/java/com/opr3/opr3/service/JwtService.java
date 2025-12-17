@@ -38,7 +38,7 @@ public class JwtService {
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(true)
-                .path("/api/v1/auth/refresh")
+                .path("/api/auth/refresh")
                 .maxAge(refreshExpiration / 1000) // Convert seconds to milliseconds
                 .sameSite("Strict")
                 .build();
