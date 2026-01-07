@@ -17,6 +17,7 @@ import com.opr3.opr3.dto.RegisterRequest;
 import com.opr3.opr3.dto.TokenInfo;
 import com.opr3.opr3.entity.Token;
 import com.opr3.opr3.entity.User;
+import com.opr3.opr3.exception.ResourceAlreadyExistsException;
 import com.opr3.opr3.repository.TokenRepository;
 import com.opr3.opr3.repository.UserRepository;
 
@@ -62,21 +63,21 @@ public class AuthService {
      * 
      * @param request the registration request containing username, password, and
      *                email
-     * @throws IllegalArgumentException if the email already exists, username
-     *                                  already exists,
-     *                                  email format is invalid, or
-     *                                  username/password is blank
+     * @throws ResourceAlreadyExistsException if the email or username already
+     *                                        exists
+     * @throws IllegalArgumentException       if email format is invalid or
+     *                                        username/password is blank
      */
-    public void register(RegisterRequest request) throws IllegalArgumentException {
+    public void register(RegisterRequest request) throws ResourceAlreadyExistsException, IllegalArgumentException {
         Optional<User> userOptionalEmail = userRepository.findUserByEmail(request.getEmail());
         Optional<User> userOptionalUsername = userRepository.findUserByNameIgnoreCase(request.getUsername());
 
         if (userOptionalEmail.isPresent()) {
-            throw new IllegalArgumentException("user with this email exists");
+            throw new ResourceAlreadyExistsException("user with this email exists");
         }
 
         if (userOptionalUsername.isPresent()) {
-            throw new IllegalArgumentException("user with this username exists");
+            throw new ResourceAlreadyExistsException("user with this username exists");
         }
 
         if (!isValidEmail(request.getEmail())) {
@@ -122,9 +123,8 @@ public class AuthService {
      * @throws IllegalStateException   if the authenticated user cannot be found
      * @throws AuthenticationException if there is no valid authentication
      * @throws NullPointerException    if required authentication data is null
-     * @throws Exception               for any other unexpected errors during logout
      */
-    public void logout() throws IllegalStateException, NullPointerException, AuthenticationException, Exception {
+    public void logout() throws IllegalStateException, NullPointerException, AuthenticationException {
         User user = getAuthenticatedUser();
 
         var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getUid());

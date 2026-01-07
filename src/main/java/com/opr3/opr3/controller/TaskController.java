@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -35,112 +34,48 @@ public class TaskController {
     private final TaskService taskService;
 
     @PostMapping
-    public ResponseEntity<?> createTask(@PathVariable Integer projectId, @RequestBody TaskCreateRequest request) {
-        try {
-            TaskResponse response = taskService.createTask(projectId, request);
-            log.info("[{}] task created in project {}: task id {}", 201, projectId, response.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException e) {
-            log.warn("[{}] task creation failed in project {}: {}", 400, projectId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (AuthenticationException e) {
-            log.warn("[{}] task creation failed in project {}: {}", 401, projectId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            log.error("[{}] task creation failed in project {}: {}", 500, projectId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
-        }
+    public ResponseEntity<TaskResponse> createTask(@PathVariable Integer projectId,
+            @RequestBody TaskCreateRequest request) {
+
+        TaskResponse response = taskService.createTask(projectId, request);
+        log.info("[{}] task created in project {}: task id {}", 201, projectId, response.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{taskId}")
-    public ResponseEntity<?> getTaskById(@PathVariable Integer projectId, @PathVariable Integer taskId) {
-        try {
-            TaskResponse response = taskService.getTaskById(taskId);
-            log.info("[{}] task retrieved: {}", 200, taskId);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            log.warn("[{}] task retrieval failed: {}", 404, e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (AuthenticationException e) {
-            log.warn("[{}] task retrieval failed: {}", 401, e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            log.error("[{}] task retrieval failed: {}", 500, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
-        }
+    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Integer projectId, @PathVariable Integer taskId) {
+        TaskResponse response = taskService.getTaskById(taskId);
+        log.info("[{}] task retrieved: {}", 200, taskId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<?> getProjectTasks(@PathVariable Integer projectId) {
-        try {
-            List<TaskResponse> response = taskService.getProjectTasks(projectId);
-            log.info("[{}] tasks retrieved for project {}: {} tasks", 200, projectId, response.size());
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            log.warn("[{}] task list retrieval failed for project {}: {}", 404, projectId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (AuthenticationException e) {
-            log.warn("[{}] task list retrieval failed for project {}: {}", 401, projectId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            log.error("[{}] task list retrieval failed for project {}: {}", 500, projectId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
-        }
+    public ResponseEntity<List<TaskResponse>> getProjectTasks(@PathVariable Integer projectId) {
+        List<TaskResponse> response = taskService.getProjectTasks(projectId);
+        log.info("[{}] tasks retrieved for project {}: {} tasks", 200, projectId, response.size());
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{taskId}")
-    public ResponseEntity<?> updateTask(@PathVariable Integer projectId, @PathVariable Integer taskId,
+    public ResponseEntity<TaskResponse> updateTask(@PathVariable Integer projectId, @PathVariable Integer taskId,
             @RequestBody TaskUpdateRequest request) {
-        try {
-            TaskResponse response = taskService.updateTask(taskId, request);
-            log.info("[{}] task updated: {}", 200, taskId);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            log.warn("[{}] task update failed for task {}: {}", 400, taskId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (AuthenticationException e) {
-            log.warn("[{}] task update failed for task {}: {}", 401, taskId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            log.error("[{}] task update failed for task {}: {}", 500, taskId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
-        }
+        TaskResponse response = taskService.updateTask(taskId, request);
+        log.info("[{}] task updated: {}", 200, taskId);
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{taskId}/status")
-    public ResponseEntity<?> updateTaskStatus(@PathVariable Integer projectId, @PathVariable Integer taskId,
+    public ResponseEntity<TaskResponse> updateTaskStatus(@PathVariable Integer projectId, @PathVariable Integer taskId,
             @RequestBody TaskStatusUpdateRequest request) {
-        try {
-            TaskResponse response = taskService.updateTaskStatus(taskId, request);
-            log.info("[{}] task status updated: {} to {}", 200, taskId, request.getStatus());
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            log.warn("[{}] task status update failed for task {}: {}", 400, taskId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (AuthenticationException e) {
-            log.warn("[{}] task status update failed for task {}: {}", 401, taskId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            log.error("[{}] task status update failed for task {}: {}", 500, taskId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
-        }
+        TaskResponse response = taskService.updateTaskStatus(taskId, request);
+        log.info("[{}] task status updated: {} to {}", 200, taskId, request.getStatus());
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{taskId}")
-    public ResponseEntity<?> deleteTask(@PathVariable Integer projectId, @PathVariable Integer taskId) {
-        try {
-            taskService.deleteTask(taskId);
-            log.info("[{}] task deleted: {}", 204, taskId);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            log.warn("[{}] task deletion failed for task {}: {}", 400, taskId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (AuthenticationException e) {
-            log.warn("[{}] task deletion failed for task {}: {}", 401, taskId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            log.error("[{}] task deletion failed for task {}: {}", 500, taskId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
-        }
+    public ResponseEntity<Void> deleteTask(@PathVariable Integer projectId, @PathVariable Integer taskId) {
+        taskService.deleteTask(taskId);
+        log.info("[{}] task deleted: {}", 204, taskId);
+        return ResponseEntity.noContent().build();
     }
 }

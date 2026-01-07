@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class TaskService {
-    
+
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final AuthService authService;
@@ -31,20 +31,22 @@ public class TaskService {
      * Creates a new task within a project for the authenticated user.
      * 
      * @param projectId the ID of the project to add the task to
-     * @param request the task creation request containing title, description, due date, and status
+     * @param request   the task creation request containing title, description, due
+     *                  date, and status
      * @return TaskResponse containing the created task details
-     * @throws IllegalArgumentException if project not found, doesn't belong to user, is archived, or title is blank
-     * @throws AuthenticationException if user is not authenticated
+     * @throws IllegalArgumentException if project not found, doesn't belong to
+     *                                  user, is archived, or title is blank
+     * @throws AuthenticationException  if user is not authenticated
      */
-    public TaskResponse createTask(Integer projectId, TaskCreateRequest request) 
+    public TaskResponse createTask(Integer projectId, TaskCreateRequest request)
             throws IllegalArgumentException, AuthenticationException {
         User user = authService.getAuthenticatedUser();
-        
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
         if (!project.getUser().getUid().equals(user.getUid())) {
-            throw new IllegalArgumentException("Project not found");
+            throw new IllegalArgumentException("Unauthorized action");
         }
 
         if (project.getIsArchived()) {
@@ -70,16 +72,18 @@ public class TaskService {
     }
 
     /**
-     * Retrieves a task by its ID, ensuring the associated project belongs to the authenticated user.
+     * Retrieves a task by its ID, ensuring the associated project belongs to the
+     * authenticated user.
      * 
      * @param taskId the ID of the task to retrieve
      * @return TaskResponse containing the task details
-     * @throws IllegalArgumentException if task not found or doesn't belong to user's project
-     * @throws AuthenticationException if user is not authenticated
+     * @throws IllegalArgumentException if task not found or doesn't belong to
+     *                                  user's project
+     * @throws AuthenticationException  if user is not authenticated
      */
     public TaskResponse getTaskById(Integer taskId) throws IllegalArgumentException, AuthenticationException {
         User user = authService.getAuthenticatedUser();
-        
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
@@ -91,17 +95,19 @@ public class TaskService {
     }
 
     /**
-     * Retrieves all tasks for a specific project belonging to the authenticated user.
+     * Retrieves all tasks for a specific project belonging to the authenticated
+     * user.
      * 
      * @param projectId the ID of the project
      * @return List of TaskResponse containing all project tasks
-     * @throws IllegalArgumentException if project not found or doesn't belong to user
-     * @throws AuthenticationException if user is not authenticated
+     * @throws IllegalArgumentException if project not found or doesn't belong to
+     *                                  user
+     * @throws AuthenticationException  if user is not authenticated
      */
-    public List<TaskResponse> getProjectTasks(Integer projectId) 
+    public List<TaskResponse> getProjectTasks(Integer projectId)
             throws IllegalArgumentException, AuthenticationException {
         User user = authService.getAuthenticatedUser();
-        
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
@@ -117,16 +123,18 @@ public class TaskService {
     /**
      * Updates an existing task within a project.
      * 
-     * @param taskId the ID of the task to update
+     * @param taskId  the ID of the task to update
      * @param request the task update request containing updated fields
      * @return TaskResponse containing the updated task details
-     * @throws IllegalArgumentException if task not found, doesn't belong to user's project, project is archived, or title is blank
-     * @throws AuthenticationException if user is not authenticated
+     * @throws IllegalArgumentException if task not found, doesn't belong to user's
+     *                                  project, project is archived, or title is
+     *                                  blank
+     * @throws AuthenticationException  if user is not authenticated
      */
-    public TaskResponse updateTask(Integer taskId, TaskUpdateRequest request) 
+    public TaskResponse updateTask(Integer taskId, TaskUpdateRequest request)
             throws IllegalArgumentException, AuthenticationException {
         User user = authService.getAuthenticatedUser();
-        
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
@@ -145,7 +153,7 @@ public class TaskService {
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
         task.setDueDate(request.getDueDate());
-        
+
         if (request.getStatus() != null) {
             task.setStatus(request.getStatus());
         }
@@ -157,16 +165,18 @@ public class TaskService {
     /**
      * Updates the status of a task (e.g., TODO, IN_PROGRESS, DONE).
      * 
-     * @param taskId the ID of the task to update
+     * @param taskId  the ID of the task to update
      * @param request the status update request containing the new status
      * @return TaskResponse containing the updated task details
-     * @throws IllegalArgumentException if task not found, doesn't belong to user's project, project is archived, or status is null
-     * @throws AuthenticationException if user is not authenticated
+     * @throws IllegalArgumentException if task not found, doesn't belong to user's
+     *                                  project, project is archived, or status is
+     *                                  null
+     * @throws AuthenticationException  if user is not authenticated
      */
-    public TaskResponse updateTaskStatus(Integer taskId, TaskStatusUpdateRequest request) 
+    public TaskResponse updateTaskStatus(Integer taskId, TaskStatusUpdateRequest request)
             throws IllegalArgumentException, AuthenticationException {
         User user = authService.getAuthenticatedUser();
-        
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
@@ -191,12 +201,13 @@ public class TaskService {
      * Deletes a task from a project.
      * 
      * @param taskId the ID of the task to delete
-     * @throws IllegalArgumentException if task not found, doesn't belong to user's project, or project is archived
-     * @throws AuthenticationException if user is not authenticated
+     * @throws IllegalArgumentException if task not found, doesn't belong to user's
+     *                                  project, or project is archived
+     * @throws AuthenticationException  if user is not authenticated
      */
     public void deleteTask(Integer taskId) throws IllegalArgumentException, AuthenticationException {
         User user = authService.getAuthenticatedUser();
-        
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 

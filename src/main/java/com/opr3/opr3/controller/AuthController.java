@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,25 +41,19 @@ public class AuthController {
      *         or error message on authentication failure (401)
      */
     @PostMapping("/authenticate")
-    public ResponseEntity<?> authenticate(@RequestBody AuthRequest request, HttpServletRequest httpServletRequest,
+    public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest request,
+            HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
 
-        try {
-            TokenInfo tokens = authService.authenticate(request);
+        TokenInfo tokens = authService.authenticate(request);
 
-            httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, tokens.getRefreshCookie().toString());
+        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, tokens.getRefreshCookie().toString());
 
-            AuthResponse response = new AuthResponse(tokens.getAccessToken());
+        AuthResponse response = new AuthResponse(tokens.getAccessToken());
 
-            log.info("[{}] user logged in", 200);
+        log.info("[{}] user logged in", 200);
 
-            return ResponseEntity.ok(response);
-
-        } catch (BadCredentialsException e) {
-            log.warn("[{}] user login failed: {}", 401, e.getMessage());
-
-            return ResponseEntity.status(401).body("invalid email or password");
-        }
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -77,29 +70,12 @@ public class AuthController {
      *         or forbidden (403) for other registration failures
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request, HttpServletRequest httpServletRequest,
+    public ResponseEntity<String> register(@RequestBody RegisterRequest request, HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
 
-        try {
-            authService.register(request);
-            log.info("[{}] user registered", 201);
-            return ResponseEntity.status(201).body("registration successful");
-        } catch (IllegalArgumentException e) {
-            String message = e.getMessage();
-
-            if (message.equals("user with this email exists") || message.equals("user with this username exists")) {
-                log.warn("[{}] registration failed: {}", 409, message);
-                return ResponseEntity.status(409).body(message);
-            }
-
-            if (message.contains("Invalid email format: ") || message.equals("password or username is blank")) {
-                log.warn("[{}] registration failed: {}", 400, message);
-                return ResponseEntity.status(400).body(message);
-            }
-
-            log.warn("[{}] registration failed: {}", 403, message);
-            return ResponseEntity.status(403).body("registration fail");
-        }
+        authService.register(request);
+        log.info("[{}] user registered", 201);
+        return ResponseEntity.status(201).body("registration successful");
     }
 
     /**
@@ -116,20 +92,15 @@ public class AuthController {
      *         found
      */
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
-        try {
-            TokenInfo tokenInfo = authService.refreshToken();
-            httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, tokenInfo.getRefreshCookie().toString());
-            AuthResponse response = new AuthResponse(tokenInfo.getAccessToken());
+    public ResponseEntity<AuthResponse> refresh(HttpServletRequest httpServletRequest,
+            HttpServletResponse httpServletResponse) {
+        TokenInfo tokenInfo = authService.refreshToken();
+        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, tokenInfo.getRefreshCookie().toString());
+        AuthResponse response = new AuthResponse(tokenInfo.getAccessToken());
 
-            log.info("[{}] token refreshed", 200);
+        log.info("[{}] token refreshed", 200);
 
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.warn("[{}] Refresh error: {}", 401, e.getMessage());
-            return ResponseEntity.status(401).body("Refresh error");
-        }
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -142,7 +113,7 @@ public class AuthController {
      *         this method.
      */
     @GetMapping("/validateToken")
-    public ResponseEntity<?> validateToken(HttpServletRequest httpServletRequest) {
+    public ResponseEntity<String> validateToken(HttpServletRequest httpServletRequest) {
         log.info("[{}] token validated", 200);
 
         return ResponseEntity.ok("valid");
@@ -158,15 +129,10 @@ public class AuthController {
      *         issues
      */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest httpServletRequest) {
-        try {
-            authService.logout();
-            log.info("[{}] logout successful", 200);
-            return ResponseEntity.ok("logout successful");
-        } catch (Exception e) {
-            log.warn("[{}] Logout failed: {}", HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("logout failed");
-        }
+    public ResponseEntity<String> logout(HttpServletRequest httpServletRequest) {
+        authService.logout();
+        log.info("[{}] logout successful", 200);
+        return ResponseEntity.ok("logout successful");
     }
 
 }
