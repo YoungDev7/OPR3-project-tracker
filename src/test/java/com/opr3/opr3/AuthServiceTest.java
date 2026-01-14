@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,15 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.opr3.opr3.dto.AuthRequest;
@@ -35,6 +30,7 @@ import com.opr3.opr3.entity.User;
 import com.opr3.opr3.repository.TokenRepository;
 import com.opr3.opr3.repository.UserRepository;
 import com.opr3.opr3.service.AuthService;
+import com.opr3.opr3.service.AuthUtilService;
 import com.opr3.opr3.service.JwtService;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,6 +52,9 @@ class AuthServiceTest {
 
     @Mock
     private Authentication authentication;
+
+    @Mock
+    private AuthUtilService authUtilService;
 
     @InjectMocks
     private AuthService authService;
@@ -139,51 +138,40 @@ class AuthServiceTest {
 
     @Test
     void shouldRefreshTokenSuccessfully() {
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            // when
-            SecurityContext securityContext = mock(SecurityContext.class);
+        // when
+        when(authUtilService.getAuthenticatedUser()).thenReturn(mockUser);
+        when(jwtService.generateToken(mockUser)).thenReturn(mockJwtToken);
+        when(jwtService.generateRefreshToken(mockUser)).thenReturn(mockRefreshToken);
+        when(jwtService.createRefreshTokenCookie(mockRefreshToken)).thenReturn(mockRefreshCookie);
+        when(tokenRepository.findAllValidTokenByUser(mockUser.getUid())).thenReturn(List.of());
 
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getPrincipal()).thenReturn(mockUser);
+        // execute
+        TokenInfo result = authService.refreshToken();
 
-            when(jwtService.generateToken(mockUser)).thenReturn(mockJwtToken);
-            when(jwtService.generateRefreshToken(mockUser)).thenReturn(mockRefreshToken);
-            when(jwtService.createRefreshTokenCookie(mockRefreshToken)).thenReturn(mockRefreshCookie);
-            when(tokenRepository.findAllValidTokenByUser(mockUser.getUid())).thenReturn(List.of());
+        // verify
+        assertNotNull(result.getAccessToken());
+        assertNotNull(result.getRefreshCookie());
 
-            // execute
-            TokenInfo result = authService.refreshToken();
-
-            // verify
-            assertNotNull(result.getAccessToken());
-            assertNotNull(result.getRefreshCookie());
-
-            verify(jwtService).generateToken(mockUser);
-            verify(jwtService).generateRefreshToken(mockUser);
-            verify(tokenRepository).findAllValidTokenByUser(mockUser.getUid());
-            verify(tokenRepository).save(any(Token.class));
-        }
+        verify(authUtilService).getAuthenticatedUser();
+        verify(jwtService).generateToken(mockUser);
+        verify(jwtService).generateRefreshToken(mockUser);
+        verify(tokenRepository).findAllValidTokenByUser(mockUser.getUid());
+        verify(tokenRepository).save(any(Token.class));
     }
 
     @Test
     void shouldThrowExceptionWhenUserNotFoundDuringRefresh() {
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            // when
-            SecurityContext securityContext = mock(SecurityContext.class);
+        // when
+        when(authUtilService.getAuthenticatedUser()).thenThrow(new RuntimeException("User not found"));
 
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getPrincipal()).thenReturn(null);
+        // execute
+        Exception exception = assertThrows(Exception.class, () -> {
+            authService.refreshToken();
+        });
 
-            // execute
-            Exception exception = assertThrows(Exception.class, () -> {
-                authService.refreshToken();
-            });
-
-            // verify
-            System.out.println("Exception message: " + exception.getMessage());
-        }
+        // verify
+        assertNotNull(exception);
+        verify(authUtilService).getAuthenticatedUser();
     }
 
     @Test
