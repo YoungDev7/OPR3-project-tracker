@@ -25,280 +25,280 @@ import io.jsonwebtoken.JwtException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+        private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    /**
-     * Handles ResourceNotFoundException - when a requested resource is not found.
-     * HTTP Status: 404 NOT_FOUND
-     */
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
-            ResourceNotFoundException ex, WebRequest request) {
+        /**
+         * Handles ResourceNotFoundException - when a requested resource is not found.
+         * HTTP Status: 404 NOT_FOUND
+         */
+        @ExceptionHandler(ResourceNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
+                        ResourceNotFoundException ex, WebRequest request) {
 
-        log.warn("[404] Resource not found: {}", ex.getMessage());
+                log.warn("[404] Resource not found: {}", ex.getMessage());
 
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.NOT_FOUND.value())
-                .message(ex.getMessage())
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.NOT_FOUND.value())
+                                .message(ex.getMessage())
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
 
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-    }
-
-    /**
-     * Handles ResourceAlreadyExistsException - when attempting to create a
-     * duplicate resource.
-     * HTTP Status: 409 CONFLICT
-     */
-    @ExceptionHandler(ResourceAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleResourceAlreadyExistsException(
-            ResourceAlreadyExistsException ex, WebRequest request) {
-
-        log.warn("[409] Resource already exists: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.CONFLICT.value())
-                .message(ex.getMessage())
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
-    }
-
-    /**
-     * Handles InvalidRequestException - when request data is invalid.
-     * HTTP Status: 400 BAD_REQUEST
-     */
-    @ExceptionHandler(InvalidRequestException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidRequestException(
-            InvalidRequestException ex, WebRequest request) {
-
-        log.warn("[400] Invalid request: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message(ex.getMessage())
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * Handles IllegalArgumentException - general validation errors.
-     * HTTP Status: 400 BAD_REQUEST
-     */
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
-            IllegalArgumentException ex, WebRequest request) {
-
-        log.warn("[400] Illegal argument: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message(ex.getMessage())
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * Handles BadCredentialsException - when authentication credentials are
-     * invalid.
-     * HTTP Status: 401 UNAUTHORIZED
-     */
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentialsException(
-            BadCredentialsException ex, WebRequest request) {
-
-        log.warn("[401] Bad credentials: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .message("Invalid email or password")
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-    }
-
-    /**
-     * Handles UnauthorizedException - when user is not authenticated.
-     * HTTP Status: 401 UNAUTHORIZED
-     */
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorizedException(
-            UnauthorizedException ex, WebRequest request) {
-
-        log.warn("[401] Unauthorized: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .message(ex.getMessage())
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-    }
-
-    /**
-     * Handles InsufficientAuthenticationException - when authentication is missing
-     * or insufficient.
-     * HTTP Status: 401 UNAUTHORIZED
-     */
-    @ExceptionHandler(InsufficientAuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleInsufficientAuthenticationException(
-            InsufficientAuthenticationException ex, WebRequest request) {
-
-        log.warn("[401] Insufficient authentication: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .message("Authentication required")
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-    }
-
-    /**
-     * Handles AuthenticationException - general authentication errors.
-     * HTTP Status: 401 UNAUTHORIZED
-     */
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(
-            AuthenticationException ex, WebRequest request) {
-
-        log.warn("[401] Authentication failed: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .message("Authentication failed")
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-    }
-
-    /**
-     * Handles ForbiddenException - when user doesn't have permission.
-     * HTTP Status: 403 FORBIDDEN
-     */
-    @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<ErrorResponse> handleForbiddenException(
-            ForbiddenException ex, WebRequest request) {
-
-        log.warn("[403] Forbidden: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.FORBIDDEN.value())
-                .message(ex.getMessage())
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
-    }
-
-    /**
-     * Handles JwtException - JWT token validation errors.
-     * HTTP Status: 401 UNAUTHORIZED
-     */
-    @ExceptionHandler(JwtException.class)
-    public ResponseEntity<ErrorResponse> handleJwtException(
-            JwtException ex, WebRequest request) {
-
-        log.warn("[401] JWT error: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .message("Invalid or expired token")
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-    }
-
-    /**
-     * Handles NullPointerException - when required data is missing.
-     * HTTP Status: 500 INTERNAL_SERVER_ERROR
-     */
-    @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<ErrorResponse> handleNullPointerException(
-            NullPointerException ex, WebRequest request) {
-
-        log.error("[500] Null pointer exception: {}", ex.getMessage(), ex);
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("Internal server error: missing required data")
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    /**
-     * Handles IllegalStateException - when operation is performed in invalid state.
-     * HTTP Status: 409 CONFLICT
-     */
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalStateException(
-            IllegalStateException ex, WebRequest request) {
-
-        log.warn("[409] Illegal state: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.CONFLICT.value())
-                .message(ex.getMessage())
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
-    }
-
-    /**
-     * Handles all other uncaught exceptions.
-     * HTTP Status: 500 INTERNAL_SERVER_ERROR
-     */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGlobalException(
-            Exception ex, WebRequest request) {
-
-        log.error("[500] Unexpected error: {}", ex.getMessage(), ex);
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("An unexpected error occurred")
-                .timestamp(LocalDateTime.now())
-                .path(getRequestPath(request))
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    /**
-     * Extracts the request path from WebRequest.
-     * Returns empty string if path cannot be extracted.
-     */
-    private String getRequestPath(WebRequest request) {
-        try {
-            return request.getDescription(false).replace("uri=", "");
-        } catch (Exception e) {
-            return "";
+                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
         }
-    }
+
+        /**
+         * Handles ResourceAlreadyExistsException - when attempting to create a
+         * duplicate resource.
+         * HTTP Status: 409 CONFLICT
+         */
+        @ExceptionHandler(ResourceAlreadyExistsException.class)
+        public ResponseEntity<ErrorResponse> handleResourceAlreadyExistsException(
+                        ResourceAlreadyExistsException ex, WebRequest request) {
+
+                log.warn("[409] Resource already exists: {}", ex.getMessage());
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.CONFLICT.value())
+                                .message(ex.getMessage())
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+        }
+
+        /**
+         * Handles InvalidRequestException - when request data is invalid.
+         * HTTP Status: 400 BAD_REQUEST
+         */
+        @ExceptionHandler(InvalidRequestException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidRequestException(
+                        InvalidRequestException ex, WebRequest request) {
+
+                log.warn("[400] Invalid request: {}", ex.getMessage());
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .message(ex.getMessage())
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+        /**
+         * Handles IllegalArgumentException - general validation errors.
+         * HTTP Status: 400 BAD_REQUEST
+         */
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+                        IllegalArgumentException ex, WebRequest request) {
+
+                log.warn("[400] Illegal argument: {}", ex.getMessage());
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .message(ex.getMessage())
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+        /**
+         * Handles BadCredentialsException - when authentication credentials are
+         * invalid.
+         * HTTP Status: 401 UNAUTHORIZED
+         */
+        @ExceptionHandler(BadCredentialsException.class)
+        public ResponseEntity<ErrorResponse> handleBadCredentialsException(
+                        BadCredentialsException ex, WebRequest request) {
+
+                log.warn("[401] Bad credentials: {}", ex.getMessage());
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.UNAUTHORIZED.value())
+                                .message("Invalid email or password")
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+
+        /**
+         * Handles UnauthorizedException - when user is not authenticated.
+         * HTTP Status: 401 UNAUTHORIZED
+         */
+        @ExceptionHandler(UnauthorizedException.class)
+        public ResponseEntity<ErrorResponse> handleUnauthorizedException(
+                        UnauthorizedException ex, WebRequest request) {
+
+                log.warn("[401] Unauthorized: {}", ex.getMessage());
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.UNAUTHORIZED.value())
+                                .message(ex.getMessage())
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+
+        /**
+         * Handles InsufficientAuthenticationException - when authentication is missing
+         * or insufficient.
+         * HTTP Status: 401 UNAUTHORIZED
+         */
+        @ExceptionHandler(InsufficientAuthenticationException.class)
+        public ResponseEntity<ErrorResponse> handleInsufficientAuthenticationException(
+                        InsufficientAuthenticationException ex, WebRequest request) {
+
+                log.warn("[401] Insufficient authentication: {}", ex.getMessage());
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.UNAUTHORIZED.value())
+                                .message("Authentication required")
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+
+        /**
+         * Handles AuthenticationException - general authentication errors.
+         * HTTP Status: 401 UNAUTHORIZED
+         */
+        @ExceptionHandler(AuthenticationException.class)
+        public ResponseEntity<ErrorResponse> handleAuthenticationException(
+                        AuthenticationException ex, WebRequest request) {
+
+                log.warn("[401] Authentication failed: {}", ex.getMessage());
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.UNAUTHORIZED.value())
+                                .message("Authentication failed")
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+
+        /**
+         * Handles ForbiddenException - when user doesn't have permission.
+         * HTTP Status: 403 FORBIDDEN
+         */
+        @ExceptionHandler(ForbiddenException.class)
+        public ResponseEntity<ErrorResponse> handleForbiddenException(
+                        ForbiddenException ex, WebRequest request) {
+
+                log.warn("[403] Forbidden: {}", ex.getMessage());
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.FORBIDDEN.value())
+                                .message(ex.getMessage())
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+        }
+
+        /**
+         * Handles JwtException - JWT token validation errors.
+         * HTTP Status: 401 UNAUTHORIZED
+         */
+        @ExceptionHandler(JwtException.class)
+        public ResponseEntity<ErrorResponse> handleJwtException(
+                        JwtException ex, WebRequest request) {
+
+                log.warn("[401] JWT error: {}", ex.getMessage());
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.UNAUTHORIZED.value())
+                                .message("Invalid or expired token")
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+
+        /**
+         * Handles NullPointerException - when required data is missing.
+         * HTTP Status: 500 INTERNAL_SERVER_ERROR
+         */
+        @ExceptionHandler(NullPointerException.class)
+        public ResponseEntity<ErrorResponse> handleNullPointerException(
+                        NullPointerException ex, WebRequest request) {
+
+                log.error("[500] Null pointer exception: {}", ex.getMessage(), ex);
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                .message("Internal server error: missing required data")
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        /**
+         * Handles IllegalStateException - when operation is performed in invalid state.
+         * HTTP Status: 409 CONFLICT
+         */
+        @ExceptionHandler(IllegalStateException.class)
+        public ResponseEntity<ErrorResponse> handleIllegalStateException(
+                        IllegalStateException ex, WebRequest request) {
+
+                log.warn("[409] Illegal state: {}", ex.getMessage());
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.CONFLICT.value())
+                                .message(ex.getMessage())
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+        }
+
+        /**
+         * Handles all other uncaught exceptions.
+         * HTTP Status: 500 INTERNAL_SERVER_ERROR
+         */
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorResponse> handleGlobalException(
+                        Exception ex, WebRequest request) {
+
+                log.error("[500] Unexpected error: {}", ex.getMessage(), ex);
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                .message("An unexpected error occurred")
+                                .timestamp(LocalDateTime.now())
+                                .path(getRequestPath(request))
+                                .build();
+
+                return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        /**
+         * Extracts the request path from WebRequest.
+         * Returns empty string if path cannot be extracted.
+         */
+        private String getRequestPath(WebRequest request) {
+                try {
+                        return request.getDescription(false).replace("uri=", "");
+                } catch (Exception e) {
+                        return "";
+                }
+        }
 }

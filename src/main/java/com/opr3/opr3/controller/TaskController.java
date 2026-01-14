@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.opr3.opr3.dto.TaskCreateRequest;
@@ -53,6 +55,15 @@ public class TaskController {
     public ResponseEntity<List<TaskResponse>> getProjectTasks(@PathVariable Integer projectId) {
         List<TaskResponse> response = taskService.getProjectTasks(projectId);
         log.info("[{}] tasks retrieved for project {}: {} tasks", 200, projectId, response.size());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<TaskResponse>> getProjectTasksPaginated(@PathVariable Integer projectId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<TaskResponse> response = taskService.getProjectTasksPaginated(projectId, page, size);
+        log.info("[{}] paginated tasks retrieved for project {}: page {}, size {}", 200, projectId, page, size);
         return ResponseEntity.ok(response);
     }
 

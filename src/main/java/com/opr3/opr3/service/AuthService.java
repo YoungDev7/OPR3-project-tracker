@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -32,6 +31,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
+    private final AuthUtilService authUtilService;
 
     /**
      * Authenticates a user with the provided credentials and generates JWT tokens.
@@ -105,7 +105,7 @@ public class AuthService {
      *                                 the database
      */
     public TokenInfo refreshToken() throws AuthenticationException {
-        User user = getAuthenticatedUser();
+        User user = authUtilService.getAuthenticatedUser();
 
         var newAccessToken = jwtService.generateToken(user);
         var newRefreshToken = jwtService.generateRefreshToken(user);
@@ -125,7 +125,7 @@ public class AuthService {
      * @throws NullPointerException    if required authentication data is null
      */
     public void logout() throws IllegalStateException, NullPointerException, AuthenticationException {
-        User user = getAuthenticatedUser();
+        User user = authUtilService.getAuthenticatedUser();
 
         var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getUid());
 
@@ -172,17 +172,4 @@ public class AuthService {
         return validator.isValid(email);
     }
 
-    public User getAuthenticatedUser() throws AuthenticationException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new InsufficientAuthenticationException("No authentication found");
-        }
-
-        if (!(authentication.getPrincipal() instanceof User)) {
-            throw new InsufficientAuthenticationException("Invalid authentication principal type");
-        }
-
-        return (User) authentication.getPrincipal();
-    }
 }

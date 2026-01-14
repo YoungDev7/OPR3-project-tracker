@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.opr3.opr3.dto.AddUserToProjectRequest;
 import com.opr3.opr3.dto.ProjectCreateRequest;
 import com.opr3.opr3.dto.ProjectResponse;
 import com.opr3.opr3.dto.ProjectUpdateRequest;
@@ -65,5 +66,13 @@ public class ProjectController {
         ProjectResponse response = projectService.archiveProject(projectId);
         log.info("[{}] project archived: {}", 200, projectId);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{projectId}/users")
+    public ResponseEntity<?> addUserToProject(@PathVariable Integer projectId,
+            @RequestBody AddUserToProjectRequest request) {
+        projectService.addUserToProject(projectId, request);
+        log.info("[{}] user added to project: {}", 200, projectId);
+        return ResponseEntity.ok().build();
     }
 }
