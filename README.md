@@ -1,4 +1,4 @@
-# OPR3 Project
+# VBAP Project
 
 This is a Spring Boot application for project and task management with JWT-based authentication.
 
