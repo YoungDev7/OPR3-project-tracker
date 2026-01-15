@@ -14,6 +14,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -38,7 +39,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @EqualsAndHashCode(exclude = { "users", "tasks" })
 @Entity
-@Table(name = "project")
+@Table(name = "project", indexes = {
+        @Index(name = "idx_project_title", columnList = "title")
+})
 public class Project {
 
     @Id
