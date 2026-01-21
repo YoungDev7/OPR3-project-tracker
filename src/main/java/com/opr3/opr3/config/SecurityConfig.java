@@ -29,7 +29,10 @@ public class SecurityConfig {
     public static final String[] WHITE_LIST_URL = {
             "/api/auth/authenticate",
             "/api/auth/register",
-            "/ws/**" };
+            "/ws/**",
+            "/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html" };
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
     private final CorsConfigurationSource corsSource;

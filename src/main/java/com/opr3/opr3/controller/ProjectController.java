@@ -21,17 +21,32 @@ import com.opr3.opr3.dto.ProjectResponse;
 import com.opr3.opr3.dto.ProjectUpdateRequest;
 import com.opr3.opr3.service.ProjectService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
+@Tag(name = "Projects", description = "Project management endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class ProjectController {
 
     private static final Logger log = LoggerFactory.getLogger(ProjectController.class);
 
     private final ProjectService projectService;
 
+    @Operation(summary = "Create a new project", description = "Creates a new project with the provided details")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Project created successfully", content = @Content(schema = @Schema(implementation = ProjectResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(@RequestBody ProjectCreateRequest request) {
         ProjectResponse response = projectService.createProject(request);
@@ -39,6 +54,12 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(summary = "Get project by ID", description = "Retrieves a specific project by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Project retrieved successfully", content = @Content(schema = @Schema(implementation = ProjectResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Project not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
     @GetMapping("/{projectId}")
     public ResponseEntity<ProjectResponse> getProjectById(@PathVariable Integer projectId) {
         ProjectResponse response = projectService.getProjectById(projectId);
@@ -46,6 +67,11 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Get all user projects", description = "Retrieves all projects accessible by the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Projects retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<List<ProjectResponse>> getAllUserProjects() {
         List<ProjectResponse> response = projectService.getAllUserProjects();
@@ -53,6 +79,12 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Update project", description = "Updates an existing project with the provided details")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Project updated successfully", content = @Content(schema = @Schema(implementation = ProjectResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Project not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
     @PutMapping("/{projectId}")
     public ResponseEntity<ProjectResponse> updateProject(@PathVariable Integer projectId,
             @RequestBody ProjectUpdateRequest request) {
@@ -61,6 +93,12 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Archive project", description = "Marks a project as archived")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Project archived successfully", content = @Content(schema = @Schema(implementation = ProjectResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Project not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
     @PatchMapping("/{projectId}/archive")
     public ResponseEntity<ProjectResponse> archiveProject(@PathVariable Integer projectId) {
         ProjectResponse response = projectService.archiveProject(projectId);
@@ -68,6 +106,12 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Add user to project", description = "Adds a user to a project by username")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User added successfully"),
+            @ApiResponse(responseCode = "404", description = "Project or user not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
     @PostMapping("/{projectId}/users")
     public ResponseEntity<?> addUserToProject(@PathVariable Integer projectId,
             @RequestBody AddUserToProjectRequest request) {

@@ -16,6 +16,13 @@ import com.opr3.opr3.dto.RegisterRequest;
 import com.opr3.opr3.dto.TokenInfo;
 import com.opr3.opr3.service.AuthService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,23 +30,18 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "Authentication and user management endpoints")
 public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthService authService;
 
-    /**
-     * Authenticates a user with email and password credentials.
-     * 
-     * @param request             The authentication request containing email and
-     *                            password
-     * @param httpServletRequest  The HTTP servlet request for logging purposes
-     * @param httpServletResponse The HTTP servlet response to set refresh token
-     *                            cookie
-     * @return ResponseEntity containing the access token on success (200),
-     *         or error message on authentication failure (401)
-     */
+    @Operation(summary = "Authenticate user", description = "Authenticates a user with email and password credentials. Returns an access token and sets a refresh token cookie.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Authentication successful", content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content)
+    })
     @PostMapping("/authenticate")
     public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest request,
             HttpServletRequest httpServletRequest,
@@ -56,19 +58,12 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Registers a new user account.
-     * 
-     * @param request             The registration request containing user details
-     *                            (email, username, password)
-     * @param httpServletRequest  The HTTP servlet request for logging purposes
-     * @param httpServletResponse The HTTP servlet response (unused but kept for
-     *                            consistency)
-     * @return ResponseEntity with success message (201) on successful registration,
-     *         conflict error (409) if user already exists,
-     *         bad request (400) for invalid input format,
-     *         or forbidden (403) for other registration failures
-     */
+    @Operation(summary = "Register new user", description = "Creates a new user account with the provided email, username, and password.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input format", content = @Content),
+            @ApiResponse(responseCode = "409", description = "User already exists", content = @Content)
+    })
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request, HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
@@ -78,19 +73,11 @@ public class AuthController {
         return ResponseEntity.status(201).body("registration successful");
     }
 
-    /**
-     * Refreshes an expired access token using a valid refresh token.
-     * Performs token rotation by generating new access and refresh tokens,
-     * revoking all existing valid tokens for the user.
-     * The refresh token is expected to be provided via HTTP-only cookie.
-     * 
-     * @param httpServletRequest  The HTTP servlet request for logging purposes
-     * @param httpServletResponse The HTTP servlet response to set the new refresh
-     *                            token cookie
-     * @return ResponseEntity containing a new access token (200) on success,
-     *         or unauthorized error (401) if refresh token is invalid or user not
-     *         found
-     */
+    @Operation(summary = "Refresh access token", description = "Generates new access and refresh tokens using a valid refresh token from cookie. Implements token rotation for enhanced security.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token refreshed successfully", content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token", content = @Content)
+    })
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
@@ -103,15 +90,11 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Validates the current access token.
-     * This endpoint can be used to check if a user's token is still valid.
-     * 
-     * @param httpServletRequest The HTTP servlet request for logging purposes
-     * @return ResponseEntity with "valid" message (200) if token is valid.
-     *         Invalid tokens will be handled by security filters before reaching
-     *         this method.
-     */
+    @Operation(summary = "Validate access token", description = "Checks if the current access token is valid. Requires Bearer token in Authorization header.", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token is valid"),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired token", content = @Content)
+    })
     @GetMapping("/validateToken")
     public ResponseEntity<String> validateToken(HttpServletRequest httpServletRequest) {
         log.info("[{}] token validated", 200);
@@ -119,15 +102,11 @@ public class AuthController {
         return ResponseEntity.ok("valid");
     }
 
-    /**
-     * Logs out the currently authenticated user.
-     * Revokes all valid tokens for the user and clears the security context.
-     * 
-     * @param httpServletRequest The HTTP servlet request for logging purposes
-     * @return ResponseEntity with success message (200) on successful logout,
-     *         or unauthorized error (401) if logout fails due to authentication
-     *         issues
-     */
+    @Operation(summary = "Logout user", description = "Revokes all valid tokens for the currently authenticated user. Requires Bearer token in Authorization header.", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logout successful"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest httpServletRequest) {
         authService.logout();
