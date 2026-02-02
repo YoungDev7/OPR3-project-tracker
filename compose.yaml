@@ -1,7 +1,7 @@
 services:
   backend:
-    build: 
-      context: . 
+    build:
+      context: .
     env_file:
       - .env
     environment:
@@ -14,6 +14,7 @@ services:
       APPLICATION_SECURITY_JWT_SECRETKEY: ${JWT_SECRET_KEY}
       APPLICATION_SECURITY_JWT_EXPIRATION: ${JWT_EXPIRATION}
       APPLICATION_SECURITY_JWT_REFRESHTOKEN_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+      APPLICATION_CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
     user: "${UID:-1000}:${GID:-1000}"
     networks:
       - spring-mysql

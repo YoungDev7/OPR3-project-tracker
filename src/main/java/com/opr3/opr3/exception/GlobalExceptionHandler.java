@@ -17,18 +17,13 @@ import com.opr3.opr3.dto.ErrorResponse;
 
 import io.jsonwebtoken.JwtException;
 
-/**
- * Global exception handler that intercepts exceptions thrown across the
- * application
- * and returns standardized error responses with appropriate HTTP status codes.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
         private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
         /**
-         * Handles ResourceNotFoundException - when a requested resource is not found.
+         * Handles ResourceNotFoundException
          * HTTP Status: 404 NOT_FOUND
          */
         @ExceptionHandler(ResourceNotFoundException.class)
@@ -48,8 +43,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles ResourceAlreadyExistsException - when attempting to create a
-         * duplicate resource.
+         * Handles ResourceAlreadyExistsException
          * HTTP Status: 409 CONFLICT
          */
         @ExceptionHandler(ResourceAlreadyExistsException.class)
@@ -69,7 +63,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles InvalidRequestException - when request data is invalid.
+         * Handles InvalidRequestException
          * HTTP Status: 400 BAD_REQUEST
          */
         @ExceptionHandler(InvalidRequestException.class)
@@ -89,7 +83,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles IllegalArgumentException - general validation errors.
+         * Handles IllegalArgumentException
          * HTTP Status: 400 BAD_REQUEST
          */
         @ExceptionHandler(IllegalArgumentException.class)
@@ -109,8 +103,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles BadCredentialsException - when authentication credentials are
-         * invalid.
+         * Handles BadCredentialsException
          * HTTP Status: 401 UNAUTHORIZED
          */
         @ExceptionHandler(BadCredentialsException.class)
@@ -130,7 +123,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles UnauthorizedException - when user is not authenticated.
+         * Handles UnauthorizedException
          * HTTP Status: 401 UNAUTHORIZED
          */
         @ExceptionHandler(UnauthorizedException.class)
@@ -150,8 +143,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles InsufficientAuthenticationException - when authentication is missing
-         * or insufficient.
+         * Handles InsufficientAuthenticationException
          * HTTP Status: 401 UNAUTHORIZED
          */
         @ExceptionHandler(InsufficientAuthenticationException.class)
@@ -171,7 +163,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles AuthenticationException - general authentication errors.
+         * Handles AuthenticationException
          * HTTP Status: 401 UNAUTHORIZED
          */
         @ExceptionHandler(AuthenticationException.class)
@@ -191,7 +183,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles ForbiddenException - when user doesn't have permission.
+         * Handles ForbiddenException
          * HTTP Status: 403 FORBIDDEN
          */
         @ExceptionHandler(ForbiddenException.class)
@@ -211,7 +203,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles JwtException - JWT token validation errors.
+         * Handles JwtException
          * HTTP Status: 401 UNAUTHORIZED
          */
         @ExceptionHandler(JwtException.class)
@@ -231,7 +223,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles NullPointerException - when required data is missing.
+         * Handles NullPointerException
          * HTTP Status: 500 INTERNAL_SERVER_ERROR
          */
         @ExceptionHandler(NullPointerException.class)
@@ -251,7 +243,7 @@ public class GlobalExceptionHandler {
         }
 
         /**
-         * Handles IllegalStateException - when operation is performed in invalid state.
+         * Handles IllegalStateException
          * HTTP Status: 409 CONFLICT
          */
         @ExceptionHandler(IllegalStateException.class)
@@ -290,10 +282,6 @@ public class GlobalExceptionHandler {
                 return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        /**
-         * Extracts the request path from WebRequest.
-         * Returns empty string if path cannot be extracted.
-         */
         private String getRequestPath(WebRequest request) {
                 try {
                         return request.getDescription(false).replace("uri=", "");

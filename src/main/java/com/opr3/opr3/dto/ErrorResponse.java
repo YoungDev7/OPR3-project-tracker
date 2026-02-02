@@ -19,24 +19,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ErrorResponse {
 
-    /**
-     * HTTP status code of the error
-     */
     private int status;
-
-    /**
-     * Error message describing what went wrong
-     */
     private String message;
 
-    /**
-     * Timestamp when the error occurred
-     */
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime timestamp;
 
-    /**
-     * Optional path where the error occurred
-     */
     private String path;
 }
