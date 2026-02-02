@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.opr3.opr3.dto.AddUserToProjectRequest;
 import com.opr3.opr3.dto.ProjectCreateRequest;
@@ -13,7 +14,6 @@ import com.opr3.opr3.dto.ProjectUpdateRequest;
 import com.opr3.opr3.dto.TaskResponse;
 import com.opr3.opr3.entity.Project;
 import com.opr3.opr3.entity.User;
-import com.opr3.opr3.exception.ForbiddenException;
 import com.opr3.opr3.repository.ProjectRepository;
 import com.opr3.opr3.repository.UserRepository;
 
@@ -26,13 +26,9 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final AuthUtilService authUtilService;
+    private final ProjectUtilService projectUtilService;
 
-    private void verifyUserInProject(Project project, User user) {
-        if (!project.getUsers().contains(user)) {
-            throw new ForbiddenException("Access denied");
-        }
-    }
-
+    @Transactional
     public ProjectResponse createProject(ProjectCreateRequest request)
             throws IllegalArgumentException, AuthenticationException {
         if (request.getTitle() == null || request.getTitle().isBlank()) {
@@ -55,17 +51,19 @@ public class ProjectService {
         return convertToResponse(savedProject);
     }
 
+    @Transactional(readOnly = true)
     public ProjectResponse getProjectById(Integer projectId) throws IllegalArgumentException, AuthenticationException {
         User user = authUtilService.getAuthenticatedUser();
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        verifyUserInProject(project, user);
+        projectUtilService.verifyUserInProject(project, user);
 
         return convertToResponse(project);
     }
 
+    @Transactional(readOnly = true)
     public List<ProjectResponse> getAllUserProjects() throws AuthenticationException {
         User user = authUtilService.getAuthenticatedUser();
 
@@ -83,7 +81,7 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        verifyUserInProject(project, user);
+        projectUtilService.verifyUserInProject(project, user);
 
         if (project.getIsArchived()) {
             throw new IllegalArgumentException("Cannot update archived project");
@@ -107,7 +105,7 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        verifyUserInProject(project, user);
+        projectUtilService.verifyUserInProject(project, user);
 
         if (project.getIsArchived()) {
             throw new IllegalArgumentException("Project is already archived");
@@ -118,6 +116,7 @@ public class ProjectService {
         return convertToResponse(archivedProject);
     }
 
+    @Transactional
     public void addUserToProject(Integer projectId, AddUserToProjectRequest request)
             throws IllegalArgumentException, AuthenticationException {
         User currentUser = authUtilService.getAuthenticatedUser();
@@ -125,13 +124,13 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        verifyUserInProject(project, currentUser);
+        projectUtilService.verifyUserInProject(project, currentUser);
 
         User userToAdd = userRepository.findUserByEmail(request.getUserEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         project.getUsers().add(userToAdd);
-        Project updatedProject = projectRepository.save(project);
+        projectRepository.save(project);
     }
 
     private ProjectResponse convertToResponse(Project project) {

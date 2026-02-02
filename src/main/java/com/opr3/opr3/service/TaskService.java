@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.opr3.opr3.dto.TaskCreateRequest;
 import com.opr3.opr3.dto.TaskResponse;
@@ -17,7 +18,6 @@ import com.opr3.opr3.entity.Project;
 import com.opr3.opr3.entity.Task;
 import com.opr3.opr3.entity.Task.TaskStatus;
 import com.opr3.opr3.entity.User;
-import com.opr3.opr3.exception.ForbiddenException;
 import com.opr3.opr3.repository.ProjectRepository;
 import com.opr3.opr3.repository.TaskRepository;
 
@@ -30,12 +30,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final AuthUtilService authUtilService;
-
-    private void verifyUserInProject(Project project, User user) {
-        if (!project.getUsers().contains(user)) {
-            throw new ForbiddenException("Access denied");
-        }
-    }
+    private final ProjectUtilService projectUtilService;
 
     public TaskResponse createTask(Integer projectId, TaskCreateRequest request)
             throws IllegalArgumentException, AuthenticationException {
@@ -44,7 +39,7 @@ public class TaskService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        verifyUserInProject(project, user);
+        projectUtilService.verifyUserInProject(project, user);
 
         if (project.getIsArchived()) {
             throw new IllegalArgumentException("Cannot add task to archived project");
@@ -68,17 +63,19 @@ public class TaskService {
         return convertToResponse(savedTask);
     }
 
+    @Transactional(readOnly = true)
     public TaskResponse getTaskById(Integer taskId) throws IllegalArgumentException, AuthenticationException {
         User user = authUtilService.getAuthenticatedUser();
 
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
-        verifyUserInProject(task.getProject(), user);
+        projectUtilService.verifyUserInProject(task.getProject(), user);
 
         return convertToResponse(task);
     }
 
+    @Transactional(readOnly = true)
     public List<TaskResponse> getProjectTasks(Integer projectId)
             throws IllegalArgumentException, AuthenticationException {
         User user = authUtilService.getAuthenticatedUser();
@@ -86,13 +83,14 @@ public class TaskService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        verifyUserInProject(project, user);
+        projectUtilService.verifyUserInProject(project, user);
 
         return project.getTasks().stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public Page<TaskResponse> getProjectTasksPaginated(Integer projectId, int page, int size)
             throws IllegalArgumentException, AuthenticationException {
         User user = authUtilService.getAuthenticatedUser();
@@ -100,7 +98,7 @@ public class TaskService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        verifyUserInProject(project, user);
+        projectUtilService.verifyUserInProject(project, user);
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Task> taskPage = taskRepository.findByProjectId(projectId, pageable);
@@ -115,7 +113,7 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
-        verifyUserInProject(task.getProject(), user);
+        projectUtilService.verifyUserInProject(task.getProject(), user);
 
         if (task.getProject().getIsArchived()) {
             throw new IllegalArgumentException("Cannot update task in archived project");
@@ -144,7 +142,7 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
-        verifyUserInProject(task.getProject(), user);
+        projectUtilService.verifyUserInProject(task.getProject(), user);
 
         if (task.getProject().getIsArchived()) {
             throw new IllegalArgumentException("Cannot update task status in archived project");
@@ -165,7 +163,7 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
 
-        verifyUserInProject(task.getProject(), user);
+        projectUtilService.verifyUserInProject(task.getProject(), user);
 
         if (task.getProject().getIsArchived()) {
             throw new IllegalArgumentException("Cannot delete task from archived project");

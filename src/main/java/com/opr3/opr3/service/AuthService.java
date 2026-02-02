@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.opr3.opr3.dto.AuthRequest;
 import com.opr3.opr3.dto.RegisterRequest;
@@ -40,6 +41,7 @@ public class AuthService {
      * @return TokenInfo containing the access token and refresh token cookie
      * @throws BadCredentialsException if the provided credentials are invalid
      */
+    @Transactional
     public TokenInfo authenticate(AuthRequest request) throws BadCredentialsException {
         try {
             Authentication authentication = authenticationManager
@@ -68,6 +70,7 @@ public class AuthService {
      * @throws IllegalArgumentException       if email format is invalid or
      *                                        username/password is blank
      */
+    @Transactional
     public void register(RegisterRequest request) throws ResourceAlreadyExistsException, IllegalArgumentException {
         Optional<User> userOptionalEmail = userRepository.findUserByEmail(request.getEmail());
         Optional<User> userOptionalUsername = userRepository.findUserByNameIgnoreCase(request.getUsername());
@@ -104,6 +107,7 @@ public class AuthService {
      * @throws AuthenticationException if the authenticated user cannot be found in
      *                                 the database
      */
+    @Transactional
     public TokenInfo refreshToken() throws AuthenticationException {
         User user = authUtilService.getAuthenticatedUser();
 
@@ -124,6 +128,7 @@ public class AuthService {
      * @throws AuthenticationException if there is no valid authentication
      * @throws NullPointerException    if required authentication data is null
      */
+    @Transactional
     public void logout() throws IllegalStateException, NullPointerException, AuthenticationException {
         User user = authUtilService.getAuthenticatedUser();
 
